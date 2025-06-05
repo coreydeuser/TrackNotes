@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Turn Feedback - Lines Under Title, Wide Cross Member</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      background: #101012;
+      color: #fff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0 0 40px 0;
+    }
+    h1 {
+      text-align: center;
+      margin-top: 30px;
+      margin-bottom: 32px;
+      font-size: 1.7em;
+      letter-spacing: 1.2px;
+      color: #fff;
+      text-shadow: 0 3px 14px #19191a;
+      z-index: 2;
+      position: relative;
+    }
+    .main-flex {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      gap: 40px;
+      max-width: 1500px;
+      margin: 0 auto 24px auto;
+      align-items: flex-start;
+      z-index: 2;
+      position: relative;
+    }
+    @media (max-width: 1200px) {
+      .main-flex {
+        flex-direction: column;
+        gap: 26px;
+        align-items: stretch;
+      }
+    }
+    .section {
+      background: #18181b;
+      border-radius: 16px;
+      box-shadow: 0 3px 24px #0009;
+      padding: 32px 20px 20px 20px;
+      position: relative;
+      margin: 0;
+      width: 430px;
+      min-width: 320px;
+      max-width: 100vw;
+      display: flex;
+      flex-direction: column;
+    }
+    .cross-section {
+      width: 600px;
+      min-width: 400px;
+      max-width: 100vw;
+      margin: 0;
+      padding-top: 32px;
+      padding-bottom: 22px;
+      padding-left: 36px;
+      padding-right: 36px;
+    }
+    .section-title {
+      font-size: 1.18em;
+      font-weight: bold;
+      text-align: center;
+      color: #fff;
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+    .section-lines {
+      width: 100%;
+      min-width: 0;
+      margin: 0 auto 28px auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .red-line {
+      height: 3px;
+      width: 100%;
+      background: #e94545;
+      margin-bottom: 2px;
+    }
+    .white-line {
+      height: 3px;
+      width: 100%;
+      background: #fff;
+    }
+    /* Cross Member Compact */
+    .cross-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 38px 52px;
+      justify-items: center;
+      width: 100%;
+    }
+    .cross-side-label {
+      text-align: center;
+      font-size: 1.15em;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #fff;
+      letter-spacing: 1px;
+    }
+    .cross-btn-row {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+    .cross-btn {
+      width: 62px;
+      height: 62px;
+      font-size: 1.65em;
+      font-weight: bold;
+      border-radius: 13px;
+      background: #18181b;
+      color: #fff;
+      cursor: pointer;
+      border: 2.5px solid #fff;
+      transition: background 0.17s, color 0.17s, box-shadow 0.17s, border-color 0.17s;
+      outline: none;
+      box-shadow: 0 1px 7px #0003;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+    .cross-btn:active,
+    .cross-btn.selected.minus {
+      background: #e94545 !important;
+      color: #fff !important;
+      border-color: #e94545 !important;
+    }
+    .cross-btn.selected.plus,
+    .cross-btn.plus:active {
+      background: #1ab26b !important;
+      color: #fff !important;
+      border-color: #1ab26b !important;
+    }
+    .cross-val {
+      width: 72px;
+      text-align: center;
+      font-size: 1.27em;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: #fff;
+      padding: 12px 0;
+      background: #131313;
+      border-radius: 11px;
+      box-shadow: 0 1px 6px #0002;
+      border: 1.5px solid #2c2c2c;
+    }
+    /* Turn Feedback Section */
+    .turn-title {
+      text-align: center;
+      font-size: 1.12em;
+      font-weight: bold;
+      margin-bottom: 13px;
+      letter-spacing: 1px;
+      color: #fff;
+      text-shadow: 0 1px 4px #0006;
+    }
+    .phases-table {
+      width: 100%;
+      border-spacing: 0;
+      border-collapse: collapse;
+    }
+    .phases-table tr {
+      height: 51px;
+    }
+    .phase-label {
+      font-weight: 700;
+      padding-right: 12px;
+      font-size: 1.13em;
+      min-width: 80px;
+      text-align: right;
+      color: #fff;
+      letter-spacing: 1px;
+    }
+    .button-group {
+      display: flex;
+      gap: 16px;
+      justify-content: flex-start;
+    }
+    .feedback-button {
+      flex: 1 1 0;
+      padding: 13px 0;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1.07em;
+      font-weight: 600;
+      background: #232323;
+      color: #fff;
+      min-width: 68px;
+      border: 2.5px solid #fff;
+      transition: background .14s, color .14s, border-color .14s, box-shadow .14s;
+      box-shadow: 0 1px 7px #0003;
+      outline: none;
+      user-select: none;
+    }
+    .feedback-button.tight {
+      color: #fff;
+      border-color: #fff;
+      background: #232323;
+    }
+    .feedback-button.neutral,
+    .feedback-button.loose {
+      color: #fff;
+      border-color: #fff;
+      background: #232323;
+    }
+    .feedback-button.selected.tight {
+      background-color: #e94545;
+      color: #fff;
+      border-color: #e94545;
+    }
+    .feedback-button.selected.neutral {
+      background-color: #bbb;
+      color: #232323;
+      border-color: #bbb;
+    }
+    .feedback-button.selected.loose {
+      background-color: #299bff;
+      color: #fff;
+      border-color: #299bff;
+    }
+    #exportPDF {
+      display: block;
+      margin: 38px auto 0 auto;
+      padding: 16px 44px;
+      background: linear-gradient(90deg, #e94545 85%, #bb1c1c 100%);
+      color: #fff;
+      font-size: 1.15em;
+      font-weight: 600;
+      border: none;
+      border-radius: 13px;
+      cursor: pointer;
+      box-shadow: 0 2px 12px #e9454544;
+      transition: background 0.18s, box-shadow 0.15s;
+      letter-spacing: 1.2px;
+    }
+    #exportPDF:hover {
+      background: #bb1c1c;
+      box-shadow: 0 4px 18px #e94545a9;
+    }
+  </style>
+</head>
+<body>
+  <!-- Logo background (uncomment and add URL in CSS above if/when ready)
+  <div style="position:fixed;z-index:0;opacity:0.07;width:100vw;height:100vh;left:0;top:0;pointer-events:none; background: url('YOUR-LOGO.png') no-repeat center center / 550px auto;"></div>
+  -->
+  <h1>Race Car Turn Feedback</h1>
+  <div class="main-flex">
+    <!-- Turn Feedback Section -->
+    <div class="section">
+      <div class="section-title">Turn Feedback</div>
+      <div class="section-lines">
+        <div class="red-line"></div>
+        <div style="height:2px; background:transparent;"></div>
+        <div class="white-line"></div>
+      </div>
+      <div class="turn-feedback-block" id="turn12">
+        <div class="turn-title">Turn 1 & 2</div>
+        <table class="phases-table">
+          <tr data-phase="Entry">
+            <td class="phase-label">Entry</td>
+            <td>
+              <div class="button-group">
+                <button class="feedback-button tight" data-value="Tight">Tight</button>
+                <button class="feedback-button neutral" data-value="Neutral">Neutral</button>
+                <button class="feedback-button loose" data-value="Loose">Loose</button>
+              </div>
+            </td>
+          </tr>
+          <tr data-phase="Landing">
+            <td class="phase-label">Landing</td>
+            <td>
+              <div class="button-group">
+                <button class="feedback-button tight" data-value="Tight">Tight</button>
+                <button class="feedback-button neutral" data-value="Neutral">Neutral</button>
+                <button class="feedback-button loose" data-value="Loose">Loose</button>
+              </div>
+            </td>
+          </tr>
+          <tr data-phase="Middle">
+            <td class="phase-label">Middle</td>
+            <td>
+              <div class="button-group">
+                <button class="feedback-button tight" data-value="Tight">Tight</button>
+                <button class="feedback-button neutral" data-value="Neutral">Neutral</button>
+                <button class="feedback-button loose" data-value="Loose">Loose</button>
+              </div>
+            </td>
+          </tr>
+          <tr data-phase="Exit">
+            <td class="phase-label">Exit</td>
+            <td>
+              <div class="button-group">
+                <button class="feedback-button tight" data-value="Tight">Tight</button>
+                <button class="feedback-button neutral" data-value="Neutral">Neutral</button>
+                <button class="feedback-button loose" data-value="Loose">Loose</button>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="turn-feedback-block" id="turn34" style="margin-top:32px;">
+        <div class="turn-title">Turn 3 & 4</div>
+        <table class="phases-table">
+          <tr data-phase="Entry">
+            <td class="phase-label">Entry</td>
+            <td>
+              <div class="button-group">
+                <button class="feedback-button tight" data-value="Tight">Tight</button>
+                <button class="feedback-button neutral" data-value="Neutral">Neutral</button>
+                <button class="feedback-button loose" data-value="Loose">Loose</button>
+              </div>
+            </td>
+          </tr>
+          <tr data-phase="Landing">
+            <td class="phase-label">Landing</td>
+            <td>
+              <div class="button-group">
+                <button class="feedback-button tight" data-value="Tight">Tight</button>
+                <button class="feedback-button neutral" data-value="Neutral">Neutral</button>
+                <button class="feedback-button loose" data-value="Loose">Loose</button>
+              </div>
+            </td>
+          </tr>
+          <tr data-phase="Middle">
+            <td class="phase-label">Middle</td>
+            <td>
+              <div class="button-group">
+                <button class="feedback-button tight" data-value="Tight">Tight</button>
+                <button class="feedback-button neutral" data-value="Neutral">Neutral</button>
+                <button class="feedback-button loose" data-value="Loose">Loose</button>
+              </div>
+            </td>
+          </tr>
+          <tr data-phase="Exit">
+            <td class="phase-label">Exit</td>
+            <td>
+              <div class="button-group">
+                <button class="feedback-button tight" data-value="Tight">Tight</button>
+                <button class="feedback-button neutral" data-value="Neutral">Neutral</button>
+                <button class="feedback-button loose" data-value="Loose">Loose</button>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Cross Member Section -->
+    <div class="section cross-section">
+      <div class="section-title">Cross Member</div>
+      <div class="section-lines">
+        <div class="red-line"></div>
+        <div style="height:2px; background:transparent;"></div>
+        <div class="white-line"></div>
+      </div>
+      <div class="cross-grid">
+        <div>
+          <div class="cross-side-label">Left</div>
+          <div class="cross-btn-row">
+            <button id="cm-left-minus" class="cross-btn minus" aria-label="Decrease Left">–</button>
+            <div id="cm-left-val" class="cross-val">0</div>
+            <button id="cm-left-plus" class="cross-btn plus" aria-label="Increase Left">+</button>
+          </div>
+        </div>
+        <div>
+          <div class="cross-side-label">Right</div>
+          <div class="cross-btn-row">
+            <button id="cm-right-minus" class="cross-btn minus" aria-label="Decrease Right">–</button>
+            <div id="cm-right-val" class="cross-val">0</div>
+            <button id="cm-right-plus" class="cross-btn plus" aria-label="Increase Right">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button id="exportPDF">Export to PDF</button>
+  <script>
+    // Turn feedback state logic
+    const state = {};
+
+    document.querySelectorAll(".turn-feedback-block").forEach(turnSection => {
+      const turnTitle = turnSection.querySelector(".turn-title").textContent.trim();
+      turnSection.querySelectorAll("tr").forEach(row => {
+        const phase = row.dataset.phase;
+        const buttons = row.querySelectorAll(".feedback-button");
+        if (!state[turnTitle]) state[turnTitle] = {};
+        buttons.forEach(button => {
+          button.addEventListener("click", () => {
+            buttons.forEach(b => b.classList.remove("selected"));
+            button.classList.add("selected");
+            state[turnTitle][phase] = button.dataset.value;
+          });
+        });
+      });
+    });
+
+    // Cross Member Logic, increments of 1/16 (0, 1/16, 1/8, 3/16, 1/4)
+    const crossSteps = [0, 0.0625, 0.125, 0.1875, 0.25];
+    let cmLeftIdx = 0, cmRightIdx = 0;
+    const cmState = { Left: 0, Right: 0 };
+
+    function formatCrossVal(val) {
+      if (val === 0) return "0";
+      if (val === 0.0625) return "1/16";
+      if (val === 0.125) return "1/8";
+      if (val === 0.1875) return "3/16";
+      if (val === 0.25) return "1/4";
+      return val.toFixed(3);
+    }
+
+    function updateCrossDisplays() {
+      document.getElementById("cm-left-val").textContent = formatCrossVal(crossSteps[cmLeftIdx]);
+      document.getElementById("cm-right-val").textContent = formatCrossVal(crossSteps[cmRightIdx]);
+      cmState.Left = crossSteps[cmLeftIdx];
+      cmState.Right = crossSteps[cmRightIdx];
+    }
+    updateCrossDisplays();
+
+    function addCrossBtnHighlight(btn, type) {
+      btn.classList.add('selected', type);
+      setTimeout(() => btn.classList.remove('selected', type), 140);
+    }
+    document.getElementById("cm-left-plus").addEventListener("click", function() {
+      addCrossBtnHighlight(this, "plus");
+      if (cmLeftIdx < crossSteps.length - 1) cmLeftIdx++;
+      updateCrossDisplays();
+    });
+    document.getElementById("cm-left-minus").addEventListener("click", function() {
+      addCrossBtnHighlight(this, "minus");
+      if (cmLeftIdx > 0) cmLeftIdx--;
+      updateCrossDisplays();
+    });
+    document.getElementById("cm-right-plus").addEventListener("click", function() {
+      addCrossBtnHighlight(this, "plus");
+      if (cmRightIdx < crossSteps.length - 1) cmRightIdx++;
+      updateCrossDisplays();
+    });
+    document.getElementById("cm-right-minus").addEventListener("click", function() {
+      addCrossBtnHighlight(this, "minus");
+      if (cmRightIdx > 0) cmRightIdx--;
+      updateCrossDisplays();
+    });
+
+    // PDF Export Logic
+    document.getElementById('exportPDF').addEventListener('click', () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      let y = 20;
+      doc.setFontSize(16);
+      doc.setTextColor(0, 0, 0); // Black for PDF text
+      doc.text("Race Car Turn Feedback", 15, y);
+      y += 10;
+
+      // Cross Member in PDF
+      doc.setFontSize(13);
+      doc.text("Cross Member", 15, y);
+      y += 8;
+      doc.setFontSize(11);
+      doc.text(`   Left: ${formatCrossVal(cmState.Left)}`, 20, y);
+      y += 7;
+      doc.text(`   Right: ${formatCrossVal(cmState.Right)}`, 20, y);
+      y += 7;
+      y += 3;
+
+      // Turns Feedback
+      Object.entries(state).forEach(([turn, phases]) => {
+        doc.setFontSize(13);
+        doc.text(turn, 15, y);
+        y += 8;
+        Object.entries(phases).forEach(([phase, value]) => {
+          doc.setFontSize(11);
+          doc.text(`   ${phase}: ${value || '-'}`, 20, y);
+          y += 7;
+        });
+        y += 3;
+      });
+
+      doc.save("turn_feedback.pdf");
+    });
+  </script>
+</body>
+</html>
