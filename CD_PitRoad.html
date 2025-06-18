@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pit Road Widget</title>
+  <style>
+    :root { --bg: #111; --text: #fff; --accent: red; }
+    body { margin:0; font-family:Arial,sans-serif; background:#222; color:var(--text); }
+    #pit-road-widget { padding:20px; }
+    .pit-box-container { display:flex; gap:2.5px; }
+    .pit-box { flex:1; min-width:30px; aspect-ratio:2/3; background:#2d2d2d; border:1px solid #444; position:relative; }
+    .pit-box .number { position:absolute; bottom:-15px; width:100%; text-align:center; font-size:12px; color:var(--text); }
+    .pit-box.eliminated { background:repeating-linear-gradient(45deg, red 0, red 10px, white 10px, white 20px); }
+    .pit-box.mobility { background:red; }
+    .pit-box.vacant { background:black; }
+    .timing-line { width:2px; background:red; height:50%; position:relative; top:25%; }
+    #settings-panel { position:fixed; top:10%; left:50%; transform:translateX(-50%); background:#333; padding:20px; border:1px solid #444; display:none; z-index:100; }
+    #settings-panel label { display:block; margin-bottom:10px; }
+    #settings-panel input { margin-left:8px; }
+    #settings-panel .field-group { margin-bottom:15px; }
+    #settings-panel button { margin-right:10px; padding:6px 12px; }
+    #settings-btn { margin:10px 20px; padding:6px 12px; }
+  </style>
+</head>
+<body>
+  <div id="pit-road-widget">
+    <div class="pit-box-container"></div>
+  </div>
+  <button id="settings-btn">Settings</button>
+  <div id="settings-panel">
+    <h3>Pit Road Settings</h3>
+    <div class="field-group">
+      <label>Box Count: <input type="number" id="box-count" min="1" max="100" /></label>
+      <label>Reverse Order: <input type="checkbox" id="reverse-order" /></label>
+    </div>
+    <div class="field-group" id="box-labels"></div>
+    <div class="field-group" id="timing-lines-settings"></div>
+    <button id="apply-settings">Apply</button>
+    <button id="close-settings">Close</button>
+  </div>
+  <script>
+    (function(){
+      const boxContainer = document.querySelector('.pit-box-container');
+      const settingsBtn = document.getElementById('settings-btn');
+      const panel = document.getElementById('settings-panel');
+      const closeBtn = document.getElementById('close-settings');
+      const applyBtn = document.getElementById('apply-settings');
+      const boxCountInput = document.getElementById('box-count');
+      const reverseInput = document.getElementById('reverse-order');
+      const labelsDiv = document.getElementById('box-labels');
+      const timingDiv = document.getElementById('timing-lines-settings');
+
+      let config = { count: 20, reverse: true, labels: {}, timing: [] };
+
+      function render() {
+        boxContainer.innerHTML = '';
+        let nums = Array.from({ length: config.count }, (_, i) => (i+1).toString());
+        if (config.reverse) nums = nums.reverse();
+        nums.forEach((num, idx) => {
+          const box = document.createElement('div');
+          box.className = 'pit-box';
+          if (config.timing.includes(num)) {
+            // nothing special
+          }
+          const label = document.createElement('div');
+          label.className = 'number';
+          label.textContent = config.labels[num] || num;
+          box.append(label);
+          boxContainer.append(box);
+          if (idx < nums.length - 1) {
+            const line = document.createElement('div');
+            line.className = 'timing-line';
+            boxContainer.append(line);
+          }
+        });
+      }
+
+      function openSettings() {
+        boxCountInput.value = config.count;
+        reverseInput.checked = config.reverse;
+
+        labelsDiv.innerHTML = '<strong>Edit Labels:</strong>';
+        let nums = Array.from({ length: config.count }, (_, i) => (i+1).toString());
+        if (config.reverse) nums = nums.reverse();
+        nums.forEach(num => {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.value = config.labels[num] || num;
+          input.dataset.num = num;
+          input.oninput = () => config.labels[num] = input.value;
+          const lbl = document.createElement('label');
+          lbl.textContent = num + ': ';
+          lbl.append(input);
+          labelsDiv.append(lbl);
+        });
+
+        timingDiv.innerHTML = '<strong>Timing Lines:</strong>';
+        nums.slice(0, -1).forEach((num, i) => {
+          const next = nums[i+1];
+          const chk = document.createElement('input');
+          chk.type = 'checkbox';
+          chk.dataset.pos = next;
+          chk.checked = config.timing.includes(next);
+          chk.onchange = () => {
+            const pos = chk.dataset.pos;
+            const idx = config.timing.indexOf(pos);
+            if (chk.checked && idx < 0) config.timing.push(pos);
+            if (!chk.checked && idx >= 0) config.timing.splice(idx, 1);
+          };
+          const lbl = document.createElement('label');
+          lbl.textContent = `Between ${num} & ${next}`;
+          lbl.append(chk);
+          timingDiv.append(lbl);
+        });
+
+        panel.style.display = 'block';
+      }
+
+      settingsBtn.onclick = openSettings;
+      closeBtn.onclick = () => panel.style.display = 'none';
+      applyBtn.onclick = () => {
+        config.count = parseInt(boxCountInput.value) || 20;
+        config.reverse = reverseInput.checked;
+        panel.style.display = 'none';
+        render();
+      };
+
+      render();
+    })();
+  </script>
+</body>
+</html>
